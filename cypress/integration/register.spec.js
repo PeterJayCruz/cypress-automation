@@ -28,7 +28,7 @@ context('Register Page', () => {
       expect(xhr.status).to.equal(201);
     });
 
-    cy.url().should('eq', Cypress.config().baseUrl);
+    cy.url().should('eq', `${Cypress.config().baseUrl}/`);
   });
 
   it('navigates to the sign in page when you click the have an account link', () => {
@@ -77,19 +77,12 @@ context('Register Page', () => {
     const duplicateUsername = 'username_'.concat(new Date().valueOf());
     const email = duplicateUsername.concat('@email.com');
 
-    cy.request({
-      method: 'POST',
-      url: `${Cypress.env('backEndBaseUrl')}/users`,
-      body: {
-        user: {
-          username: duplicateUsername,
-          email: email,
-          password: testPassword
-        }
-      }
-    });
-
-    cy.get('input[type="text"]')
+    cy.createNewUser({
+        username: duplicateUsername,
+        email: email,
+        password: testPassword
+      })
+      .get('input[type="text"]')
       .type(duplicateUsername)
       .get('input[type="email"]')
       .type('uniqueEmail@email.com')
@@ -105,19 +98,12 @@ context('Register Page', () => {
     const username = 'username_'.concat(new Date().valueOf());
     const duplicateEmail = username.concat('@email.com');
 
-    cy.request({
-      method: 'POST',
-      url: `${Cypress.env('backEndBaseUrl')}/users`,
-      body: {
-        user: {
-          username: username,
-          email: duplicateEmail,
-          password: testPassword
-        }
-      }
-    });
-
-    cy.get('input[type="text"]')
+    cy.createNewUser({
+        username: username,
+        email: duplicateEmail,
+        password: testPassword
+      })
+      .get('input[type="text"]')
       .type('uniqueUsername')
       .get('input[type="email"]')
       .type(duplicateEmail)
