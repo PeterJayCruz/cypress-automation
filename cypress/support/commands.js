@@ -26,8 +26,9 @@
 
 Cypress.Commands.add('createNewUser', (options) => {
   cy.request({
+    log: false,
     method: 'POST',
-    url: `${Cypress.env('backEndBaseUrl')}/users`,
+    url: `${Cypress.env('backEndBaseUrl')}${Cypress.env('usersApi')}`,
     body: {
       user: {
         username: options.username,
@@ -35,5 +36,46 @@ Cypress.Commands.add('createNewUser', (options) => {
         password: options.password
       }
     }
+  });
+
+  const log = Cypress.log({
+    name: 'createNewUser',
+    displayName: 'create new user' ,
+    message: options.email,
+    consoleProps: () => {
+      return {
+        'Options': options,
+        'Storage': window.localStorage
+      };
+    }
+  });
+});
+
+Cypress.Commands.add('login', (options) => {
+  cy.request({
+    log: false,
+    method: 'POST',
+    url: `${Cypress.env('backEndBaseUrl')}${Cypress.env('loginApi')}`,
+    body: {
+      user: {
+        email: options.email,
+        password: options.password
+      }
+    }
+  })
+  .then((response) => {
+    window.localStorage.setItem('jwt', response.body.user.token);
+
+    const log = Cypress.log({
+      name: 'login',
+      displayName: 'login as user' ,
+      message: options.email,
+      consoleProps: () => {
+        return {
+          'Options': options,
+          'Storage': window.localStorage
+        };
+      }
+    });
   });
 });
