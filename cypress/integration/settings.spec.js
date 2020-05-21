@@ -70,11 +70,36 @@ context('Settings Page', () => {
     });
 
     it('updates the username', () => {
-      const anotherUniqueUsername = 'username_'.concat(new Date().valueOf());
+      const newUsername = 'newUsername_'.concat(new Date().valueOf());
 
       cy.get('input[placeholder="Username"]')
         .clear()
-        .type(anotherUniqueUsername)
+        .type(newUsername)
+        .get('button')
+        .contains('Update Settings')
+        .click()
+        .url()
+        .should('eq', `${Cypress.config().baseUrl}/`);
+    });
+
+    it.only('updates the email', () => {
+      const newUsername = 'newUsername_'.concat(new Date().valueOf());
+      const newEmail = newUsername.concat('@email.com');
+
+      cy.get('input[placeholder="Email"]')
+        .clear()
+        .type(newEmail)
+        .get('button')
+        .contains('Update Settings')
+        .click()
+        .url()
+        .should('eq', `${Cypress.config().baseUrl}/`);
+    });
+
+    it.only('updates the password', () => {
+      cy.get('input[placeholder="New Password"]')
+        .clear()
+        .type('newPassword')
         .get('button')
         .contains('Update Settings')
         .click()
