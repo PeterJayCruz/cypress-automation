@@ -49,6 +49,16 @@ context('Settings Page', () => {
         .should('eq', `${Cypress.config().baseUrl}/`);
     });
 
+    it('logs the user out', () => {
+      cy.get('button')
+        .contains('Or click here to logout.')
+        .click().then(() => {
+          expect(window.localStorage.getItem('jwt')).to.equal('');
+
+          cy.url()
+            .should('eq', `${Cypress.config().baseUrl}/`)
+        });
+    });
   });
 
   context('Update User Login Information', () => {
@@ -82,7 +92,7 @@ context('Settings Page', () => {
         .should('eq', `${Cypress.config().baseUrl}/`);
     });
 
-    it.only('updates the email', () => {
+    it('updates the email', () => {
       const newUsername = 'newUsername_'.concat(new Date().valueOf());
       const newEmail = newUsername.concat('@email.com');
 
@@ -96,7 +106,7 @@ context('Settings Page', () => {
         .should('eq', `${Cypress.config().baseUrl}/`);
     });
 
-    it.only('updates the password', () => {
+    it('updates the password', () => {
       cy.get('input[placeholder="New Password"]')
         .clear()
         .type('newPassword')
