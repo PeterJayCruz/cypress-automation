@@ -118,7 +118,7 @@ context('Settings Page', () => {
     });
   });
 
-  context.only('Negative Test Cases', () => {
+  context('Negative Test Cases', () => {
     const existingUsername = 'username_'.concat(new Date().valueOf());
     const existingEmail = existingUsername.concat('@email.com');
 
