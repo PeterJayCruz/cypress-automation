@@ -3,6 +3,7 @@
   "env": {
     "backEndBaseUrl": "http://localhost:8080",
     "usersApi": "/users",
-    "loginApi": "/users/login"
+    "loginApi": "/users/login",
+    "articlesApi": "/articles"
   }
 }
