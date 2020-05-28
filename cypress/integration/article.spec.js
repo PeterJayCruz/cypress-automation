@@ -24,9 +24,7 @@ context('Article Page', () => {
       });
 
       beforeEach(() => {
-        cy.login({
-          email: user.email
-        })
+        cy.login(user)
         .visit(`/article/${article.title.toLowerCase().replace(/ /g, '-')}`);
       });
 
@@ -59,6 +57,23 @@ context('Article Page', () => {
           .should('contain', `/editor/${article.title.toLowerCase().replace(/ /g, '-')}`);
       });
 
+      it('deletes the article', () => {
+        cy.server()
+          .route({
+            method: 'DELETE',
+            url: `${Cypress.env('backEndBaseUrl')}${Cypress.env('articlesApi')}/${article.title.toLowerCase().replace(/ /g, '-')}`
+          }).as('deleteArticle');
+
+        cy.get('button')
+          .contains('Delete Article')
+          .click()
+          .wait('@deleteArticle')
+          .its('status')
+          .should('eq', 204);
+
+        cy.url()
+          .should('eq', `${Cypress.config().baseUrl}/`);
+      });
     });
   });
 });
