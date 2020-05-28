@@ -4,6 +4,7 @@
     "backEndBaseUrl": "http://localhost:8080",
     "usersApi": "/users",
     "loginApi": "/users/login",
-    "articlesApi": "/articles"
+    "articlesApi": "/articles",
+    "testPassword": "testPassword"
   }
 }
