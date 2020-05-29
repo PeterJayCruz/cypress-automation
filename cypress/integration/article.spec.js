@@ -75,5 +75,50 @@ context('Article Page', () => {
           .should('eq', `${Cypress.config().baseUrl}/`);
       });
     });
+
+    context.only('not logged in as a user', () => {
+      let authHeaderToken = 'Token ';
+      let article = {};
+      let user = {};
+
+      before(() => {
+        cy.createUser({})
+          .its('body.user')
+          .then((userResponse) => {
+            user = userResponse;
+            cy.createArticle({
+              description: 'description_'.concat(new Date().valueOf()),
+              body: 'body_'.concat(new Date().valueOf()),
+              tagList: []
+            }, authHeaderToken.concat(userResponse.token))
+            .its('body.article')
+            .then((articleResponse) => {
+              article = articleResponse;
+            });
+          });
+      });
+
+      beforeEach(() => {
+        cy.visit(`/article/${article.title.toLowerCase().replace(/ /g, '-')}`);
+      });
+
+      it('navigates to the register page', () => {
+        cy.get('.article-page')
+          .find('a')
+          .contains('sign up')
+          .click()
+          .url()
+          .should('eq', `${Cypress.config().baseUrl}/register`)
+      });
+
+      it('navigates to the sign in page', () => {
+        cy.get('.article-page')
+          .find('a')
+          .contains('Sign in')
+          .click()
+          .url()
+          .should('eq', `${Cypress.config().baseUrl}/login`)
+      });
+    });
   });
 });
