@@ -76,7 +76,7 @@ context('Article Page', () => {
       });
     });
 
-    context.only('not logged in as a user', () => {
+    context('not logged in as a user', () => {
       let authHeaderToken = 'Token ';
       let article = {};
       let user = {};
@@ -100,6 +100,28 @@ context('Article Page', () => {
 
       beforeEach(() => {
         cy.visit(`/article/${article.title.toLowerCase().replace(/ /g, '-')}`);
+      });
+
+      it('displays the article title', () => {
+        cy.get('.banner > div > h1')
+          .should('have.text', article.title);
+      });
+
+      it('displays the author\'s username', () => {
+        cy.get('.info > a')
+          .should('have.text', user.username);
+      });
+
+      it('displays the article creation date', () => {
+        const createdDate = new Date(article.createdAt).toString().slice(0, 15);
+
+        cy.get('.info > span')
+          .should('have.text', createdDate);
+      });
+
+      it('displays the article body', () => {
+        cy.get('.row.article-content > div > div > p')
+          .should('have.text', article.body);
       });
 
       it('navigates to the register page', () => {
