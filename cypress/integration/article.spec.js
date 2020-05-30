@@ -36,12 +36,12 @@ context('Article Page', () => {
     });
   };
 
-  const getComments = (apiPath) => {
+  const getComments = (articleUriPath) => {
     return new Promise((resolve) => {
       cy.request({
         log: false,
         method: 'GET',
-        url: `${Cypress.env('backEndBaseUrl')}/articles/${apiPath}/comments`,
+        url: `${Cypress.env('backEndBaseUrl')}/articles/${articleUriPath}/comments`,
       })
       .its('body.comments', {
         log: false
@@ -50,12 +50,11 @@ context('Article Page', () => {
         const log = Cypress.log({
           name: 'getComments',
           displayName: 'get comments',
-          message: apiPath,
+          message: articleUriPath,
           consoleProps: () => {
             return {
               'Comments API response': commentsResponse,
-              'Article (input)': apiPath
-              // 'Comment (input)': comment.body
+              'Article Path (input)': articleUriPath
             };
           }
         });
@@ -67,7 +66,6 @@ context('Article Page', () => {
 
   context('positive', () => {
     context ('logged in as author', () => {
-      let authHeaderToken = 'Token ';
       let article = {};
       let user = {};
 
@@ -76,21 +74,24 @@ context('Article Page', () => {
           .its('body.user')
           .then((userResponse) => {
             user = userResponse;
+            user.authHeaderToken = 'Token '.concat(userResponse.token);
+
             cy.createArticle({
               description: 'description_'.concat(new Date().valueOf()),
               body: 'body_'.concat(new Date().valueOf()),
               tagList: []
-            }, authHeaderToken.concat(userResponse.token))
+            }, user.authHeaderToken)
             .its('body.article')
             .then((articleResponse) => {
               article = articleResponse;
+              article.path = articleResponse.title.toLowerCase().replace(/ /g, '-');
             });
           });
       });
 
       beforeEach(() => {
         cy.login(user)
-        .visit(`/article/${article.title.toLowerCase().replace(/ /g, '-')}`);
+        .visit(`/article/${article.path}`);
       });
 
       it('displays the article title', () => {
@@ -119,14 +120,14 @@ context('Article Page', () => {
         cy.get('.ion-edit')
           .click()
           .url()
-          .should('contain', `/editor/${article.title.toLowerCase().replace(/ /g, '-')}`);
+          .should('contain', `/editor/${article.path}`);
       });
 
       it('deletes the article', () => {
         cy.server()
           .route({
             method: 'DELETE',
-            url: `${Cypress.env('backEndBaseUrl')}${Cypress.env('articlesApi')}/${article.title.toLowerCase().replace(/ /g, '-')}`
+            url: `${Cypress.env('backEndBaseUrl')}${Cypress.env('articlesApi')}/${article.path}`
           }).as('deleteArticle');
 
         cy.get('button')
@@ -142,7 +143,6 @@ context('Article Page', () => {
     });
 
     context('not logged in as a user', () => {
-      let authHeaderToken = 'Token ';
       let article = {};
       let user = {};
 
@@ -153,23 +153,23 @@ context('Article Page', () => {
           })
           .then((userResponse) => {
             user = userResponse;
-            authHeaderToken = authHeaderToken.concat(userResponse.token);
+            user.authHeaderToken = 'Token '.concat(userResponse.token);
 
             cy.createArticle({
               description: 'description_'.concat(new Date().valueOf()),
               body: 'body_'.concat(new Date().valueOf()),
               tagList: []
-            }, authHeaderToken)
+            }, user.authHeaderToken)
             .its('body.article', {
               log: false
             })
             .then((articleResponse) => {
               article = articleResponse;
-              article.apiPath = articleResponse.title.toLowerCase().replace(/ /g, '-');
+              article.path = articleResponse.title.toLowerCase().replace(/ /g, '-');
 
               for(let i = 0; i < 5; i += 1) {
-                addComment(authHeaderToken, {
-                  articleTitle: article.apiPath,
+                addComment(user.authHeaderToken, {
+                  articleTitle: article.path,
                   body: 'comment_'.concat((i+1).toString())
                 });
               }
@@ -178,7 +178,7 @@ context('Article Page', () => {
       });
 
       beforeEach(() => {
-        cy.visit(`/article/${article.apiPath}`);
+        cy.visit(`/article/${article.path}`);
       });
 
       it('displays the article title', () => {
@@ -222,9 +222,10 @@ context('Article Page', () => {
       });
 
       it('displays all of the article\'s comments', () => {
-        getComments(article.apiPath).then(comments => {
+        getComments(article.path).then(comments => {
           cy.get('.card').then((commentCards) => {
             expect(comments.length).to.equal(commentCards.length);
+
             for(let i = 0; i < commentCards.length; i += 1) {
               expect(commentCards[i].children[0].innerText).to.equal(comments[i].body);
               expect(commentCards[i].children[1].children[1].innerText).to.equal(comments[i].author.username);
