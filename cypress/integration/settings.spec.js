@@ -117,4 +117,55 @@ context('Settings Page', () => {
         .should('eq', `${Cypress.config().baseUrl}/`);
     });
   });
+
+  context('Negative Test Cases', () => {
+    const existingUsername = 'username_'.concat(new Date().valueOf());
+    const existingEmail = existingUsername.concat('@email.com');
+
+    before(() => {
+      cy.createNewUser({
+          username: existingUsername,
+          email: existingEmail,
+          password: testPassword
+        });
+    });
+
+    beforeEach(() => {
+      const anotherUsername = 'username_'.concat(new Date().valueOf());
+      const anotherEmail = anotherUsername.concat('@email.com');
+
+      cy.createNewUser({
+          username: anotherUsername,
+          email: anotherEmail,
+          password: testPassword
+        })
+        .login({
+          email: anotherEmail,
+          password: testPassword
+        })
+        .visit('/settings');
+    });
+
+    it('requires a unique username', ()=> {
+      cy.get('input[placeholder="Username"]')
+        .clear()
+        .type(existingUsername)
+        .get('button')
+        .contains('Update Settings')
+        .click()
+        .get('.error-messages > li')
+        .should('have.text', 'username username already exist')
+    });
+
+    it('requires a unique email', ()=> {
+      cy.get('input[placeholder="Email"]')
+        .clear()
+        .type(existingEmail)
+        .get('button')
+        .contains('Update Settings')
+        .click()
+        .get('.error-messages > li')
+        .should('have.text', 'email email already exist')
+    });
+  });
 });

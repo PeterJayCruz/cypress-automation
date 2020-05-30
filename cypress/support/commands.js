@@ -36,30 +36,74 @@ Cypress.Commands.add('createNewUser', (options) => {
         password: options.password
       }
     }
-  });
-
-  const log = Cypress.log({
-    name: 'createNewUser',
-    displayName: 'create new user' ,
-    message: options.email,
-    consoleProps: () => {
-      return {
-        'Options': options,
-        'Storage': window.localStorage
-      };
-    }
+  })
+  .then((response) => {
+    const log = Cypress.log({
+      name: 'createNewUser',
+      displayName: 'create new user' ,
+      message: options.email,
+      consoleProps: () => {
+        return {
+          'User API response': response,
+          'Options': options,
+          'Storage': window.localStorage
+        };
+      }
+    });
   });
 });
 
-Cypress.Commands.add('login', (options) => {
+Cypress.Commands.add('createUser', (options = {}) => {
+  const defaultUsername = 'username_'.concat(new Date().valueOf());
+  const defaultEmail = defaultUsername.concat('@email.com');
+
+  const user = Object.assign({
+    username: defaultUsername,
+    email: defaultEmail,
+    password: Cypress.env('testPassword')
+  }, options);
+
+  cy.request({
+    log: false,
+    method: 'POST',
+    url: `${Cypress.env('backEndBaseUrl')}${Cypress.env('usersApi')}`,
+    body: {
+      user: {
+        username: user.username,
+        email: user.email,
+        password: user.password
+      }
+    }
+  })
+  .then((response) => {
+    const log = Cypress.log({
+      name: 'createUser',
+      displayName: 'create user' ,
+      message: user.email,
+      consoleProps: () => {
+        return {
+          'User API response': response,
+          'Options': options,
+          'Storage': window.localStorage
+        };
+      }
+    });
+  });
+});
+
+Cypress.Commands.add('login', (options = {}) => {
+  const user = Object.assign({
+    password: Cypress.env('testPassword')
+  }, options);
+
   cy.request({
     log: false,
     method: 'POST',
     url: `${Cypress.env('backEndBaseUrl')}${Cypress.env('loginApi')}`,
     body: {
       user: {
-        email: options.email,
-        password: options.password
+        email: user.email,
+        password: user.password
       }
     }
   })
@@ -68,10 +112,11 @@ Cypress.Commands.add('login', (options) => {
 
     const log = Cypress.log({
       name: 'login',
-      displayName: 'login as user' ,
+      displayName: 'login as' ,
       message: options.email,
       consoleProps: () => {
         return {
+          'Users login API response': response,
           'Options': options,
           'Storage': window.localStorage
         };
@@ -79,3 +124,48 @@ Cypress.Commands.add('login', (options) => {
     });
   });
 });
+
+Cypress.Commands.add('createArticle', (options = {}, token) => {
+  const defaultTitle = 'article title_'.concat(new Date().valueOf());
+  const defaultDescription = 'test description';
+  const defaultBody = 'test body';
+  const defaultTag = 'tag_'.concat(new Date().valueOf());
+
+  const article = Object.assign({
+    title: defaultTitle,
+    description: defaultDescription,
+    body: defaultBody,
+    tagList: [defaultTag]
+  }, options);
+
+  cy.request({
+    log: false,
+    method: 'POST',
+    url: `${Cypress.env('backEndBaseUrl')}${Cypress.env('articlesApi')}`,
+    headers: {
+      Authorization: token
+    },
+    body: {
+      article: {
+        title: article.title,
+        description: article.description,
+        body: article.body,
+        tagList: article.tagList
+      }
+    }
+  })
+  .then((response) => {
+    const log = Cypress.log({
+      name: 'createArticle',
+      displayName: 'create article' ,
+      message: article.title,
+      consoleProps: () => {
+        return {
+          'Articles API response': response,
+          'Article (input)': article,
+          'Options': options,
+        };
+      }
+    });
+  });
+})
