@@ -145,7 +145,6 @@ context('Article Page', () => {
       let authHeaderToken = 'Token ';
       let article = {};
       let user = {};
-      let articleTitlePath = '';
 
       before(() => {
         cy.createUser({})
@@ -220,6 +219,21 @@ context('Article Page', () => {
           .click()
           .url()
           .should('eq', `${Cypress.config().baseUrl}/login`)
+      });
+
+      it('displays all of the article\'s comments', () => {
+        getComments(article.apiPath).then(comments => {
+          cy.get('.card').then((commentCards) => {
+            expect(comments.length).to.equal(commentCards.length);
+            for(let i = 0; i < commentCards.length; i += 1) {
+              expect(commentCards[i].children[0].innerText).to.equal(comments[i].body);
+              expect(commentCards[i].children[1].children[1].innerText).to.equal(comments[i].author.username);
+
+              const createdDate = new Date(comments[i].createdAt).toString().slice(0, 15);
+              expect(commentCards[i].children[1].children[2].innerText).to.equal(createdDate);
+            }
+          });
+        });
       });
     });
   });
