@@ -10,7 +10,7 @@ context('Article Page', () => {
     cy.request({
       log: false,
       method: 'POST',
-      url: `${Cypress.env('backEndBaseUrl')}/articles/${comment.articleTitle}/comments`,
+      url: `${Cypress.env('backEndBaseUrl')}/articles/${comment.articleUriPath}/comments`,
       headers: {
         Authorization: token
       },
@@ -28,8 +28,8 @@ context('Article Page', () => {
         consoleProps: () => {
           return {
             'Comments API response': commentsResponse,
-            'Article (input)': comment.articleTitle,
-            'Comment (input)': comment.body
+            'Article Path': comment.articleUriPath,
+            'Comment Body': comment.body
           };
         }
       });
@@ -54,7 +54,7 @@ context('Article Page', () => {
           consoleProps: () => {
             return {
               'Comments API response': commentsResponse,
-              'Article Path (input)': articleUriPath
+              'Article Path': articleUriPath
             };
           }
         });
@@ -71,7 +71,9 @@ context('Article Page', () => {
 
       before(() => {
         cy.createUser({})
-          .its('body.user')
+          .its('body.user', {
+            log: false
+          })
           .then((userResponse) => {
             user = userResponse;
             user.authHeaderToken = 'Token '.concat(userResponse.token);
@@ -81,7 +83,9 @@ context('Article Page', () => {
               body: 'body_'.concat(new Date().valueOf()),
               tagList: []
             }, user.authHeaderToken)
-            .its('body.article')
+            .its('body.article', {
+              log: false
+            })
             .then((articleResponse) => {
               article = articleResponse;
               article.path = articleResponse.title.toLowerCase().replace(/ /g, '-');
@@ -91,7 +95,7 @@ context('Article Page', () => {
 
       beforeEach(() => {
         cy.login(user)
-        .visit(`/article/${article.path}`);
+          .visit(`/article/${article.path}`);
       });
 
       it('displays the article title', () => {
@@ -169,7 +173,7 @@ context('Article Page', () => {
 
               for(let i = 0; i < 5; i += 1) {
                 addComment(user.authHeaderToken, {
-                  articleTitle: article.path,
+                  articleUriPath: article.path,
                   body: 'comment_'.concat((i+1).toString())
                 });
               }
@@ -209,7 +213,7 @@ context('Article Page', () => {
           .contains('sign up')
           .click()
           .url()
-          .should('eq', `${Cypress.config().baseUrl}/register`)
+          .should('eq', `${Cypress.config().baseUrl}/register`);
       });
 
       it('navigates to the sign in page', () => {
@@ -218,7 +222,7 @@ context('Article Page', () => {
           .contains('Sign in')
           .click()
           .url()
-          .should('eq', `${Cypress.config().baseUrl}/login`)
+          .should('eq', `${Cypress.config().baseUrl}/login`);
       });
 
       it('displays all of the article\'s comments', () => {
